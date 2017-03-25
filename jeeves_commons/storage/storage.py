@@ -27,19 +27,17 @@ class WorkflowClient(BaseStorage):
         workflow = self._create_workflow(wf_id, content, env)
         return workflow
 
-    def get(self, workflow_id):
-        workflow = self._get(Workflow, workflow_id=workflow_id)
-        if not workflow:
-            raise WorkflowDoesNotExistError('Workflow with id {} not found.'
-                                            .format(workflow_id))
+    def get(self, workflow_id, **kwargs):
+        workflow = self._get(Workflow, workflow_id=workflow_id, **kwargs)
         return workflow
 
     def update(self, wf_id,
                status=None,
                env_result=None,
                date_done=None,
-               started_at=None):
+               started_at=None,):
         workflow = self.get(wf_id)
+        # Change to kwargs!!
         workflow = self._update_workflow(workflow,
                                          status,
                                          env_result,
@@ -48,8 +46,8 @@ class WorkflowClient(BaseStorage):
         # Return the new, updated workflow
         return workflow
 
-    def delete(self, wf_id):
-        workflow = Workflow.query.filter_by(workflow_id=wf_id)
+    def delete(self, wf_id, **kwargs):
+        workflow = self.get(wf_id, **kwargs)
         # Todo: remove all associated tasks.
         # self._delete_all_tasks(workflow.id)
         if not workflow:
@@ -103,8 +101,8 @@ class TaskClient(BaseStorage):
                           status=status,
                           **kwargs)
 
-    def get(self, task_id):
-        return self._get(Task, task_id=task_id)
+    def get(self, task_id, **kwargs):
+        return self._get(Task, task_id=task_id, **kwargs)
 
     def create(self,
                workflow_id,
@@ -171,8 +169,8 @@ class TaskClient(BaseStorage):
 
 class MinionClient(BaseStorage):
 
-    def get(self, minion_ip):
-        return self._get(Minion, minion_ip=minion_ip)
+    def get(self, minion_ip, **kwargs):
+        return self._get(Minion, minion_ip=minion_ip, **kwargs)
 
     def list(self, **kwargs):
         return self._list(Minion, **kwargs)
