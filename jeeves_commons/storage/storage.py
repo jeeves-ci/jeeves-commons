@@ -103,8 +103,8 @@ class TaskClient(BaseStorage):
                           status=status,
                           **kwargs)
 
-    def get(self, task_id):
-        return self._get(Task, task_id=task_id)
+    def get(self, task_id, **kwargs):
+        return self._get(Task, task_id=task_id, **kwargs)
 
     def create(self,
                workflow_id,
