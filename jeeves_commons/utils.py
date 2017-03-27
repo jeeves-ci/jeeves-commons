@@ -47,13 +47,13 @@ def wait_for_port(host, port, duration=60, interval=3):
 def create_logger(name, path=None, level=logging.DEBUG):
     logger = logging.getLogger(name)
     if path:
-        logger.addHandler(_create_file_handler(logger, path))
+        logger.addHandler(_create_file_handler(path))
     logger.addHandler(logging.StreamHandler())
     logger.level = level
     return logger
 
 
-def _create_file_handler(logger, path):
+def _create_file_handler(path):
     _make_dir(path)
     return logging.FileHandler(path)
 
@@ -61,7 +61,7 @@ def _create_file_handler(logger, path):
 def get_or_create_file_logger(name, path):
     logger = logging.getLogger(name)
     if len(logger.handlers) == 0:
-        logger.addHandler(_create_file_handler(logger, path))
+        logger.addHandler(_create_file_handler(path))
     return logger
 
 
@@ -78,6 +78,6 @@ def which(executable):
 
     return None
 
-# create_logger('aa')
-# create_logger('aa')
-# pass
+    # create_logger('aa')
+    # create_logger('aa')
+    # pass
