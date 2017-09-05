@@ -19,10 +19,11 @@ RESULTS_BACKEND_USERNAME = os.getenv(POSTGRES_USERNAME_ENV, 'postgres')
 RESULTS_BACKEND_PASSWORD = os.getenv(POSTGRES_PASSWORD_ENV, 'postgres')
 
 Base = declarative_base()
-engine = create_engine('postgresql://{0}:{1}@{2}/{3}'
+engine = create_engine('postgresql://{0}:{1}@{2}:{3}/{4}'
                        .format(RESULTS_BACKEND_USERNAME,
                                RESULTS_BACKEND_PASSWORD,
                                RESULTS_BACKEND_HOST_IP,
+                               RESULTS_BACKEND_HOST_PORT,
                                POSTGRES_RESULTS_DB),
                        convert_unicode=True)
 db_session = scoped_session(sessionmaker(autocommit=False,
@@ -39,4 +40,4 @@ def init_db():
 def get_db_session():
     return scoped_session(sessionmaker(autocommit=False,
                                        autoflush=False,
-                                       bind=engine))
+                                       bind=engine)), engine

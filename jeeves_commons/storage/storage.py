@@ -198,19 +198,27 @@ class MinionClient(BaseStorage):
 
 class StorageClient(object):
     def __init__(self):
-        self.session = get_db_session()
+        self.session, self.engine = get_db_session()
         self.workflows = WorkflowClient(self.session)
         self.tasks = TaskClient(self.session)
         self.minions = MinionClient(self.session)
+        self.dispose()
 
     def close(self):
         self.session.close()
+
+    def commit(self):
+        self.session.commit()
+
+    def dispose(self):
+        self.engine.dispose()
 
 
 client = StorageClient()
 
 
 def get_storage_client():
+    client.dispose()
     return client
 
 
