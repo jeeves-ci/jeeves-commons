@@ -35,14 +35,16 @@ class WorkflowClient(BaseStorage):
                status=None,
                env_result=None,
                date_done=None,
-               started_at=None,):
+               started_at=None,
+               ended_at=None):
         workflow = self.get(wf_id)
         # Change to kwargs!!
         workflow = self._update_workflow(workflow,
                                          status,
                                          env_result,
                                          date_done,
-                                         started_at)
+                                         started_at,
+                                         ended_at)
         # Return the new, updated workflow
         return workflow
 
@@ -61,13 +63,16 @@ class WorkflowClient(BaseStorage):
                          status=None,
                          env_result=None,
                          date_done=None,
-                         started_at=None):
+                         started_at=None,
+                         ended_at=None):
         if status:
             workflow.status = status
         if date_done:
             workflow.date_done = date_done
         if started_at and not workflow.started_at:
             workflow.started_at = started_at
+        if ended_at and not workflow.ended_at:
+            workflow.ended_at = ended_at
         if env_result:
             workflow.env_result = env_result
         self.db_session.commit()
