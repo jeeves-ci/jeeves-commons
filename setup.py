@@ -19,7 +19,7 @@ setup(
     description='Jeeves Commons.',
     install_requires=[
         'sqlalchemy==1.1.5',
-        'celery==4.0.2',
+        'celery==4.2.1',
         'pika==0.10.0',
     ]
 )

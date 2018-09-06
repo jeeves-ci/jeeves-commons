@@ -16,6 +16,7 @@ def create_workflow(storage_client, workflow_content, workflow_id, env={}):
     tasks = _create_workflow_tasks(storage_client,
                                    workflow_content,
                                    workflow_id)
+    storage_client.commit()
     return workflow, tasks
 
 

@@ -2,6 +2,11 @@ import os
 import time
 import socket
 import logging
+
+from constants import (RABBITMQ_USERNAME_ENV,
+                       RABBITMQ_PASSWORD_ENV,
+                       RABBITMQ_HOST_PORT_ENV,
+                       DEFAULT_BROKER_PORT)
 from contextlib import contextmanager
 
 import pika
@@ -9,11 +14,13 @@ import pika
 
 @contextmanager
 def open_channel(rabbit_host_ip,
-                 rabbit_port=5672,
-                 rabbit_username='guest',
-                 rabbit_password='guest'):
+                 rabbit_port=os.getenv(RABBITMQ_HOST_PORT_ENV,
+                                       DEFAULT_BROKER_PORT),
+                 rabbit_username=os.getenv(RABBITMQ_USERNAME_ENV, 'guest'),
+                 rabbit_password=os.getenv(RABBITMQ_PASSWORD_ENV, 'guest')):
     creds = pika.credentials.PlainCredentials(username=rabbit_username,
                                               password=rabbit_password)
+    channel = None
     try:
         connection = pika.BlockingConnection(
             pika.ConnectionParameters(host=rabbit_host_ip,
@@ -25,7 +32,8 @@ def open_channel(rabbit_host_ip,
         print 'Error connecting to queue: {message}' \
             .format(message=e.message)
     finally:
-        channel.close()
+        if channel:
+            channel.close()
 
 
 def wait_for_port(host, port, duration=60, interval=3):
@@ -46,10 +54,11 @@ def wait_for_port(host, port, duration=60, interval=3):
 
 def create_logger(name, path=None, level=logging.DEBUG):
     logger = logging.getLogger(name)
-    if path:
-        logger.addHandler(_create_file_handler(path))
-    logger.addHandler(logging.StreamHandler())
-    logger.level = level
+    if len(logger.handlers) == 0:
+        if path:
+            logger.addHandler(_create_file_handler(path))
+        logger.addHandler(logging.StreamHandler())
+        logger.level = level
     return logger
 
 

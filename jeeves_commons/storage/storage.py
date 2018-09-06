@@ -48,6 +48,9 @@ class WorkflowClient(BaseStorage):
         # Return the new, updated workflow
         return workflow
 
+    def commit(self):
+        self.db_session.commit()
+
     def delete(self, wf_id, **kwargs):
         workflow = self.get(wf_id, **kwargs)
         # Todo: remove all associated tasks.
@@ -75,13 +78,11 @@ class WorkflowClient(BaseStorage):
             workflow.ended_at = ended_at
         if env_result:
             workflow.env_result = env_result
-        self.db_session.commit()
         return workflow
 
     def _delete_workflow(self, workflow):
         result = workflow.first()
         workflow.delete()
-        self.db_session.commit()
         return result
 
     def _create_workflow(self, wf_id, content, env):
@@ -94,7 +95,6 @@ class WorkflowClient(BaseStorage):
                             status=status,
                             created_at=created_at)
         self.db_session.add(workflow)
-        self.db_session.commit()
         return workflow
 
 
@@ -149,7 +149,6 @@ class TaskClient(BaseStorage):
             task.started_at = started_at
         if minion_ip:
             task.minion_ip = minion_ip
-        self.db_session.commit()
         return task
 
     def _create_task(self,
@@ -168,7 +167,6 @@ class TaskClient(BaseStorage):
                     created_at=created_at,
                     task_dependencies=task_dependencies,)
         self.db_session.add(task)
-        self.db_session.commit()
         return task
 
 
@@ -197,7 +195,6 @@ class MinionClient(BaseStorage):
             raise MinionDoesNotExistError('Minion with ID {0} does not exist.')
         if status:
             minion.status = status
-        self.db_session.commit()
         return minion
 
 
@@ -223,7 +220,7 @@ client = StorageClient()
 
 
 def get_storage_client():
-    client.dispose()
+    #client.dispose()
     return client
 
 
