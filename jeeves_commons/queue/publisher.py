@@ -82,12 +82,11 @@ def revoke_task_tree(head, terminate=True):
     for task in workflow_tasks:
         dependencies = json.loads(task.task_dependencies)
         if head.task_id in dependencies:
-            remote_control.revoke(task_id=task.task_id,
-                                  terminate=terminate)
+            remote_control.revoke(task_id=task.task_id, terminate=terminate)
             revoke_task_tree(head=task)
 
 
-def revoke_workflow(workflow, terminate=True):
+def revoke_workflow_manually(workflow, terminate=True):
     for task in workflow.tasks:
         if task.status not in ['SUCCESS', 'REVOKED']:
             remote_control.revoke(task_id=task.task_id,
@@ -96,6 +95,7 @@ def revoke_workflow(workflow, terminate=True):
                                               status='REVOKED_MANUALLY')
     get_storage_client().workflows.update(workflow.workflow_id,
                                           status='REVOKED')
+    get_storage_client().commit()
 
 
 def shutdown_minion(minion_ip):
