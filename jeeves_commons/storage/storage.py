@@ -220,7 +220,7 @@ client = StorageClient()
 
 
 def get_storage_client():
-    #client.dispose()
+    client.dispose()
     return client
 
 
