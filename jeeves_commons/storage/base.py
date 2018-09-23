@@ -21,10 +21,14 @@ class BaseStorage(object):
             self.db_session.refresh(item)
         return item
 
-    def _list(self, cls_type, **kwargs):
+    def _list(self, cls_type, page=1, size=10, order_by=None, **kwargs):
         query = self.build_query(cls_type, **kwargs)
+        total = query.count()
+        if order_by:
+            query = query.order_by(order_by.replace(',', ' '))
+        query = query.offset(page).limit(size)
         items = query.all()
-        return items
+        return items, total
 
     def _create(self, cls_type, **kwargs):
         item = cls_type(**kwargs)

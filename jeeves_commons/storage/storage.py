@@ -16,8 +16,13 @@ class WorkflowClient(BaseStorage):
     def __init__(self, session):
         super(WorkflowClient, self).__init__(session=session)
 
-    def list(self, status=None, **kwargs):
-        return self._list(Workflow, status=status, **kwargs)
+    def list(self, status=None, page=1, size=10, order_by=None, **kwargs):
+        return self._list(Workflow,
+                          status=status,
+                          order_by=order_by,
+                          page=page,
+                          size=size,
+                          **kwargs)
 
     def create(self, wf_id, content, env):
         workflow = Workflow.query.filter_by(workflow_id=wf_id).first()
@@ -100,10 +105,19 @@ class WorkflowClient(BaseStorage):
 
 class TaskClient(BaseStorage):
 
-    def list(self, workflow_id=None, status=None, **kwargs):
+    def list(self,
+             workflow_id=None,
+             status=None,
+             order_by=None,
+             page=1,
+             size=100,
+             **kwargs):
         return self._list(Task,
                           workflow_id=workflow_id,
                           status=status,
+                          order_by=order_by,
+                          page=page,
+                          size=size,
                           **kwargs)
 
     def get(self, task_id, **kwargs):
