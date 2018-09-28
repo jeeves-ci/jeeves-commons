@@ -62,6 +62,7 @@ class Task(Base):
 
 class Workflow(Base):
     __tablename__ = 'jeeves_workflows'
+    name = Column(String, unique=False)
     workflow_id = Column(String, primary_key=True, unique=True)
     env = Column(String, unique=False)
     env_result = Column(String, unique=False)
@@ -75,6 +76,7 @@ class Workflow(Base):
     tasks = relationship('Task', back_populates='workflow')
 
     def __init__(self,
+                 name=None,
                  workflow_id=None,
                  content=None,
                  status=None,
@@ -83,6 +85,7 @@ class Workflow(Base):
                  created_at=None,
                  started_at=None,
                  ended_at=None):
+        self.name = name
         self.workflow_id = workflow_id
         self.content = content
         self.status = status
@@ -115,3 +118,41 @@ class Minion(Base):
 
     def __repr__(self):
         return '<minion {}>'.format(self.ip)
+
+
+class User(Base):
+    __tablename__ = 'jeeves_users'
+    id = Column(Integer, unique=True, primary_key=True)
+    email = Column(String, unique=True)
+    password = Column(String, unique=True)
+    role = Column(String, unique=False)
+    salt = Column(String, unique=False)
+    tenant_id = Column(ForeignKey('jeeves_tenants.id'), nullable=False)
+
+    def __init__(self,
+                 password=None,
+                 tenant_id=None,
+                 role=None,
+                 email=None,
+                 salt=None):
+        self.password = password
+        self.tenant_id = tenant_id
+        self.role = role
+        self.email = email
+        self.salt = salt
+
+    def __repr__(self):
+        return '<user {}>'.format(self.ip)
+
+
+class Tenant(Base):
+    __tablename__ = 'jeeves_tenants'
+    id = Column(Integer, unique=True, primary_key=True)
+    name = Column(String, unique=True)
+
+    def __init__(self,
+                 name=None):
+        self.name = name
+
+    def __repr__(self):
+        return '<tenant {}>'.format(self.ip)

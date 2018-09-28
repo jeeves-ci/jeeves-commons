@@ -1,6 +1,8 @@
 import datetime
+import hashlib
+import uuid
 
-from models import Task, Workflow, Minion
+from models import Task, Workflow, Minion, User, Tenant
 from database import get_db_session
 from base import BaseStorage
 from exceptions import (TaskDoesNotExistError,
@@ -8,6 +10,8 @@ from exceptions import (TaskDoesNotExistError,
                         WorkflowAlreadyExistsError,
                         WorkflowDoesNotExistError,
                         MinionAlreadyExistsError,
+                        TenantAlreadyExistsError,
+                        UserAlreadyExistsError,
                         MinionDoesNotExistError)
 
 
@@ -16,20 +20,27 @@ class WorkflowClient(BaseStorage):
     def __init__(self, session):
         super(WorkflowClient, self).__init__(session=session)
 
-    def list(self, status=None, page=1, size=10, order_by=None, **kwargs):
+    def list(self,
+             status=None,
+             page=1,
+             size=10,
+             order_by=None,
+             pattern=None,
+             **kwargs):
         return self._list(Workflow,
                           status=status,
                           order_by=order_by,
+                          pattern=pattern,
                           page=page,
                           size=size,
                           **kwargs)
 
-    def create(self, wf_id, content, env):
+    def create(self, name, wf_id, content, env):
         workflow = Workflow.query.filter_by(workflow_id=wf_id).first()
         if workflow:
             raise WorkflowAlreadyExistsError('Workflow with id {} '
                                              'already exists.'.format(wf_id))
-        workflow = self._create_workflow(wf_id, content, env)
+        workflow = self._create_workflow(name, wf_id, content, env)
         return workflow
 
     def get(self, workflow_id, **kwargs):
@@ -90,16 +101,18 @@ class WorkflowClient(BaseStorage):
         workflow.delete()
         return result
 
-    def _create_workflow(self, wf_id, content, env):
+    def _create_workflow(self, name, wf_id, content, env):
         status = 'CREATED'
         created_at = str(datetime.datetime.now())
-        workflow = Workflow(workflow_id=wf_id,
+        workflow = Workflow(name=name,
+                            workflow_id=wf_id,
                             content=content,
                             env=env,
                             env_result=env,
                             status=status,
                             created_at=created_at)
         self.db_session.add(workflow)
+        self.db_session.flush()
         return workflow
 
 
@@ -181,6 +194,7 @@ class TaskClient(BaseStorage):
                     created_at=created_at,
                     task_dependencies=task_dependencies,)
         self.db_session.add(task)
+        self.db_session.flush()
         return task
 
 
@@ -212,12 +226,56 @@ class MinionClient(BaseStorage):
         return minion
 
 
+class UserClient(BaseStorage):
+
+    def get(self, email, **kwargs):
+        return self._get(User,
+                         email=email,
+                         **kwargs)
+
+    def list(self, **kwargs):
+        return self._list(User, **kwargs)
+
+    def create(self, email, password, role, tenant_id, **kwargs):
+        user = self._get(User, email=email)
+        if user:
+            raise UserAlreadyExistsError('User with email {} '
+                                         'already exists.'.format(email))
+        salt = uuid.uuid4().hex
+        hashed_password = hashlib.sha512(password + salt).hexdigest()
+        return self._create(User,
+                            password=hashed_password,
+                            email=email,
+                            salt=salt,
+                            role=role,
+                            tenant_id=tenant_id,
+                            **kwargs)
+
+
+class TenantClient(BaseStorage):
+
+    def get(self, name, **kwargs):
+        return self._get(Tenant, name=name, **kwargs)
+
+    def list(self, **kwargs):
+        return self._list(Tenant, **kwargs)
+
+    def create(self, name):
+        tenant = self._get(Tenant, name=name)
+        if tenant:
+            raise TenantAlreadyExistsError('Tenant with name {} '
+                                           'already exists.'.format(name))
+        return self._create(Tenant, name=name)
+
+
 class StorageClient(object):
     def __init__(self):
         self.session, self.engine = get_db_session()
         self.workflows = WorkflowClient(self.session)
         self.tasks = TaskClient(self.session)
         self.minions = MinionClient(self.session)
+        self.users = UserClient(self.session)
+        self.tenants = TenantClient(self.session)
         self.dispose()
 
     def close(self):
@@ -225,6 +283,9 @@ class StorageClient(object):
 
     def commit(self):
         self.session.commit()
+
+    def flush(self):
+        self.session.flush()
 
     def dispose(self):
         self.engine.dispose()

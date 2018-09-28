@@ -8,15 +8,24 @@ from jeeves_commons.dsl.topology import topological_sort
 from sqlalchemy.ext.declarative import DeclarativeMeta
 
 
-def create_workflow(storage_client, workflow_content, workflow_id, env={}):
+def create_workflow(storage_client,
+                    name,
+                    content,
+                    workflow_id,
+                    env={},
+                    commit=True):
     workflow = storage_client.workflows.create(
-        content=json.dumps(workflow_content),
+        name=name,
         wf_id=workflow_id,
+        content=json.dumps(content),
         env=json.dumps(env))
     tasks = _create_workflow_tasks(storage_client,
-                                   workflow_content,
+                                   content,
                                    workflow_id)
-    storage_client.commit()
+    if commit:
+        storage_client.commit()
+    else:
+        storage_client.flush()
     return workflow, tasks
 
 

@@ -20,5 +20,13 @@ class MinionAlreadyExistsError(Exception):
     pass
 
 
+class UserAlreadyExistsError(Exception):
+    pass
+
+
+class TenantAlreadyExistsError(Exception):
+    pass
+
+
 class MinionDoesNotExistError(Exception):
     pass
