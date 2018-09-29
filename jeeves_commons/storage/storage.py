@@ -21,6 +21,7 @@ class WorkflowClient(BaseStorage):
         super(WorkflowClient, self).__init__(session=session)
 
     def list(self,
+             tenant_id,
              status=None,
              page=1,
              size=10,
@@ -28,6 +29,7 @@ class WorkflowClient(BaseStorage):
              pattern=None,
              **kwargs):
         return self._list(Workflow,
+                          tenant_id=tenant_id,
                           status=status,
                           order_by=order_by,
                           pattern=pattern,
@@ -35,12 +37,12 @@ class WorkflowClient(BaseStorage):
                           size=size,
                           **kwargs)
 
-    def create(self, name, wf_id, content, env):
+    def create(self, name, wf_id, tenant_id, content, env):
         workflow = Workflow.query.filter_by(workflow_id=wf_id).first()
         if workflow:
             raise WorkflowAlreadyExistsError('Workflow with id {} '
                                              'already exists.'.format(wf_id))
-        workflow = self._create_workflow(name, wf_id, content, env)
+        workflow = self._create_workflow(name, wf_id, tenant_id, content, env)
         return workflow
 
     def get(self, workflow_id, **kwargs):
@@ -101,11 +103,12 @@ class WorkflowClient(BaseStorage):
         workflow.delete()
         return result
 
-    def _create_workflow(self, name, wf_id, content, env):
+    def _create_workflow(self, name, wf_id, tenant_id, content, env):
         status = 'CREATED'
         created_at = str(datetime.datetime.now())
         workflow = Workflow(name=name,
                             workflow_id=wf_id,
+                            tenant_id=tenant_id,
                             content=content,
                             env=env,
                             env_result=env,

@@ -71,6 +71,7 @@ class Workflow(Base):
     created_at = Column(DateTime(timezone=False), unique=False)
     started_at = Column(DateTime(timezone=False), unique=False)
     ended_at = Column(DateTime(timezone=False), unique=False)
+    tenant_id = Column(ForeignKey('jeeves_tenants.id'), nullable=False)
 
     # Set one to many relationship
     tasks = relationship('Task', back_populates='workflow')
@@ -78,6 +79,7 @@ class Workflow(Base):
     def __init__(self,
                  name=None,
                  workflow_id=None,
+                 tenant_id=None,
                  content=None,
                  status=None,
                  env=None,
@@ -87,6 +89,7 @@ class Workflow(Base):
                  ended_at=None):
         self.name = name
         self.workflow_id = workflow_id
+        self.tenant_id = tenant_id
         self.content = content
         self.status = status
         self.env = env

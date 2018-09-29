@@ -12,11 +12,13 @@ def create_workflow(storage_client,
                     name,
                     content,
                     workflow_id,
+                    tenant_id,
                     env={},
                     commit=True):
     workflow = storage_client.workflows.create(
         name=name,
         wf_id=workflow_id,
+        tenant_id=tenant_id,
         content=json.dumps(content),
         env=json.dumps(env))
     tasks = _create_workflow_tasks(storage_client,

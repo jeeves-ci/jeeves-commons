@@ -23,7 +23,7 @@ class BaseStorage(object):
 
     def _list(self,
               cls_type,
-              page=1,
+              page=0,
               size=10,
               order_by=None,
               pattern=None,
