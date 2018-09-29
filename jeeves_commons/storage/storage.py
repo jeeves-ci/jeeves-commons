@@ -37,25 +37,26 @@ class WorkflowClient(BaseStorage):
                           size=size,
                           **kwargs)
 
-    def create(self, name, wf_id, tenant_id, content, env):
-        workflow = Workflow.query.filter_by(workflow_id=wf_id).first()
+    def create(self, name, tenant_id, content, env):
+        workflow = Workflow.query.filter_by(name=name).first()
         if workflow:
-            raise WorkflowAlreadyExistsError('Workflow with id {} '
-                                             'already exists.'.format(wf_id))
-        workflow = self._create_workflow(name, wf_id, tenant_id, content, env)
+            raise WorkflowAlreadyExistsError('Workflow with name {} '
+                                             'already exists.'.format(name))
+        workflow = self._create_workflow(name, tenant_id, content, env)
         return workflow
 
-    def get(self, workflow_id, **kwargs):
-        workflow = self._get(Workflow, workflow_id=workflow_id, **kwargs)
+    def get(self, **kwargs):
+        workflow = self._get(Workflow, **kwargs)
         return workflow
 
-    def update(self, wf_id,
+    def update(self,
+               wf_id,
                status=None,
                env_result=None,
                date_done=None,
                started_at=None,
                ended_at=None):
-        workflow = self.get(wf_id)
+        workflow = self.get(workflow_id=wf_id)
         # Change to kwargs!!
         workflow = self._update_workflow(workflow,
                                          status,
@@ -70,7 +71,7 @@ class WorkflowClient(BaseStorage):
         self.db_session.commit()
 
     def delete(self, wf_id, **kwargs):
-        workflow = self.get(wf_id, **kwargs)
+        workflow = self.get(workflow_id=wf_id, **kwargs)
         # Todo: remove all associated tasks.
         # self._delete_all_tasks(workflow.id)
         if not workflow:
@@ -103,11 +104,10 @@ class WorkflowClient(BaseStorage):
         workflow.delete()
         return result
 
-    def _create_workflow(self, name, wf_id, tenant_id, content, env):
+    def _create_workflow(self, name, tenant_id, content, env):
         status = 'CREATED'
         created_at = str(datetime.datetime.now())
         workflow = Workflow(name=name,
-                            workflow_id=wf_id,
                             tenant_id=tenant_id,
                             content=content,
                             env=env,

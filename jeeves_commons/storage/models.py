@@ -4,7 +4,8 @@ from sqlalchemy import (Column,
                         String,
                         LargeBinary,
                         DateTime,
-                        ForeignKey)
+                        ForeignKey,
+                        UniqueConstraint)
 
 from database import Base
 
@@ -15,7 +16,7 @@ class Task(Base):
     task_id = Column(String, unique=True)
     task_dependencies = Column(String)
     task_name = Column(String, unique=False)
-    workflow_id = Column(String,
+    workflow_id = Column(Integer,
                          ForeignKey('jeeves_workflows.workflow_id'))
     minion_ip = Column(String,
                        ForeignKey('jeeves_minions.minion_ip'))
@@ -63,7 +64,7 @@ class Task(Base):
 class Workflow(Base):
     __tablename__ = 'jeeves_workflows'
     name = Column(String, unique=False)
-    workflow_id = Column(String, primary_key=True, unique=True)
+    workflow_id = Column(Integer, primary_key=True, unique=True)
     env = Column(String, unique=False)
     env_result = Column(String, unique=False)
     status = Column(String, unique=False)
@@ -72,6 +73,8 @@ class Workflow(Base):
     started_at = Column(DateTime(timezone=False), unique=False)
     ended_at = Column(DateTime(timezone=False), unique=False)
     tenant_id = Column(ForeignKey('jeeves_tenants.id'), nullable=False)
+
+    UniqueConstraint('tenant_id', 'name')
 
     # Set one to many relationship
     tasks = relationship('Task', back_populates='workflow')
