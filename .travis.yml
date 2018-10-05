@@ -4,4 +4,4 @@ python:
 install:
 - pip install -r test-requirements.txt
 script:
-- tox
+- tox --parallel--safe-build .

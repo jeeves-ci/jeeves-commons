@@ -5,14 +5,14 @@ import uuid
 from models import Task, Workflow, Minion, User, Tenant
 from database import get_db_session
 from base import BaseStorage
-from exceptions import (TaskDoesNotExistError,
-                        TaskAlreadyExistsError,
-                        WorkflowAlreadyExistsError,
-                        WorkflowDoesNotExistError,
-                        MinionAlreadyExistsError,
-                        TenantAlreadyExistsError,
-                        UserAlreadyExistsError,
-                        MinionDoesNotExistError)
+from storage_exceptions import (TaskDoesNotExistError,
+                                TaskAlreadyExistsError,
+                                WorkflowAlreadyExistsError,
+                                WorkflowDoesNotExistError,
+                                MinionAlreadyExistsError,
+                                TenantAlreadyExistsError,
+                                UserAlreadyExistsError,
+                                MinionDoesNotExistError)
 
 
 class WorkflowClient(BaseStorage):
@@ -67,9 +67,6 @@ class WorkflowClient(BaseStorage):
         # Return the new, updated workflow
         return workflow
 
-    def commit(self):
-        self.db_session.commit()
-
     def delete(self, wf_id, **kwargs):
         workflow = self.get(workflow_id=wf_id, **kwargs)
         # Todo: remove all associated tasks.
@@ -106,7 +103,7 @@ class WorkflowClient(BaseStorage):
 
     def _create_workflow(self, name, tenant_id, content, env):
         status = 'CREATED'
-        created_at = str(datetime.datetime.now())
+        created_at = datetime.datetime.now().replace(microsecond=0)
         workflow = Workflow(name=name,
                             tenant_id=tenant_id,
                             content=content,
@@ -188,7 +185,7 @@ class TaskClient(BaseStorage):
                      task_name,
                      content):
         status = 'CREATED'
-        created_at = str(datetime.datetime.now())
+        created_at = datetime.datetime.now()
         task = Task(workflow_id=workflow_id,
                     task_id=task_id,
                     task_name=task_name,
@@ -214,7 +211,7 @@ class MinionClient(BaseStorage):
         if minion:
             raise MinionAlreadyExistsError('Minion with ip {} '
                                            'already exists.'.format(minion_ip))
-        started_at = str(datetime.datetime.now())
+        started_at = datetime.datetime.now()
         return self._create(Minion,
                             minion_ip=minion_ip,
                             started_at=started_at,
@@ -272,7 +269,7 @@ class TenantClient(BaseStorage):
 
 
 class StorageClient(object):
-    def __init__(self):
+    def __init__(self, engine=None):
         self.session, self.engine = get_db_session()
         self.workflows = WorkflowClient(self.session)
         self.tasks = TaskClient(self.session)
