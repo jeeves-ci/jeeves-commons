@@ -23,7 +23,7 @@ class WorkflowClient(BaseStorage):
     def list(self,
              tenant_id,
              status=None,
-             page=1,
+             page=0,
              size=10,
              order_by=None,
              pattern=None,
@@ -38,7 +38,7 @@ class WorkflowClient(BaseStorage):
                           **kwargs)
 
     def create(self, name, tenant_id, content, env):
-        workflow = Workflow.query.filter_by(name=name).first()
+        workflow = self._get(Workflow, name=name)
         if workflow:
             raise WorkflowAlreadyExistsError('Workflow with name {} '
                                              'already exists.'.format(name))
@@ -122,7 +122,7 @@ class TaskClient(BaseStorage):
              workflow_id=None,
              status=None,
              order_by=None,
-             page=1,
+             page=0,
              size=100,
              **kwargs):
         return self._list(Task,
@@ -142,7 +142,7 @@ class TaskClient(BaseStorage):
                task_dependencies,
                task_name,
                content):
-        task = Task.query.filter_by(task_id=task_id).first()
+        task = self._get(Task, task_id=task_id)
         if task:
             raise TaskAlreadyExistsError('Task with id {} '
                                          'already exists.'.format(task_id))
@@ -269,7 +269,7 @@ class TenantClient(BaseStorage):
 
 
 class StorageClient(object):
-    def __init__(self, engine=None):
+    def __init__(self):
         self.session, self.engine = get_db_session()
         self.workflows = WorkflowClient(self.session)
         self.tasks = TaskClient(self.session)

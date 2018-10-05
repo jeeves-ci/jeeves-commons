@@ -26,6 +26,7 @@ pq_engine = create_engine('postgresql://{0}:{1}@{2}:{3}/{4}'
                                   RESULTS_BACKEND_HOST_PORT,
                                   POSTGRES_RESULTS_DB),
                           convert_unicode=True)
+
 db_session = scoped_session(sessionmaker(autocommit=False,
                                          autoflush=False,
                                          bind=pq_engine))

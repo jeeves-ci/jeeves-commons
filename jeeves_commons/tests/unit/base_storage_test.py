@@ -14,7 +14,7 @@ class BaseStorageTest(unittest.TestCase):
         _, path = tempfile.mkstemp(prefix='jeeves-db')
         sqlite_engine = create_engine('sqlite:///{}'.format(path),
                                       convert_unicode=True)
-        init_db(sqlite_engine)
-        cls.storage = StorageClient(engine=sqlite_engine)
+        init_db(engine=sqlite_engine)
+        cls.storage = StorageClient()
         # create the default tenant
         cls.storage.tenants.create('default')
