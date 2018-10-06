@@ -112,7 +112,6 @@ class WorkflowClient(BaseStorage):
                             status=status,
                             created_at=created_at)
         self.db_session.add(workflow)
-        self.db_session.flush()
         return workflow
 
 
@@ -194,7 +193,6 @@ class TaskClient(BaseStorage):
                     created_at=created_at,
                     task_dependencies=task_dependencies,)
         self.db_session.add(task)
-        self.db_session.flush()
         return task
 
 
@@ -276,13 +274,16 @@ class StorageClient(object):
         self.minions = MinionClient(self.session)
         self.users = UserClient(self.session)
         self.tenants = TenantClient(self.session)
-        self.dispose()
 
     def close(self):
         self.session.close()
 
     def commit(self):
-        self.session.commit()
+        try:
+            self.session.commit()
+        except:
+            self.session.rollback()
+            raise
 
     def flush(self):
         self.session.flush()
@@ -295,7 +296,6 @@ client = StorageClient()
 
 
 def get_storage_client():
-    client.dispose()
     return client
 
 
